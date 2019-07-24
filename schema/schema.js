@@ -2,6 +2,7 @@ const graphql = require("graphql");
 const _ = require("lodash");
 const Book = require("../models/book");
 const Author = require("../models/author");
+const Product = require("../models/product");
 
 const {
     GraphQLObjectType,
@@ -12,6 +13,19 @@ const {
     GraphQLList,
     GraphQLNonNull
     } = graphql;
+
+const ProductType = new GraphQLObjectType({
+    name: "Product",
+    fields: ()=> ({
+        id: {type: GraphQLID},
+        nombre: {type: GraphQLString},
+        precio: {type: GraphQLInt},
+        categoria: {type: GraphQLString},
+        plan: {type: GraphQLString},
+        modalidad: {type: GraphQLString},
+        canal: {type: GraphQLString}
+    })
+});
 
 const BookType = new GraphQLObjectType({
     name: "Book",
@@ -81,7 +95,25 @@ const RootQuery = new GraphQLObjectType({
                  return Author.find({});
                 }
             
-        }
+        },
+        product: {
+            type: ProductType,
+            args: {id: {type: GraphQLID}},
+
+            resolve(partent, args){
+                // code to get data from db / other source
+
+               // return _.find(books, {id: args.id});
+               return Product.findById(args.id);
+            }
+        }, 
+        products: {
+            type: new GraphQLList(ProductType),
+            resolve(parent, args){
+              //  return products;
+              return Product.find({});
+            }
+        },
     }
 });
 
@@ -102,6 +134,9 @@ const Mutation = new GraphQLObjectType({
                 return author.save();
             }
         },
+
+
+
         addBook: {
             type: BookType,
             args: {
@@ -117,7 +152,29 @@ const Mutation = new GraphQLObjectType({
                 });
                 return book.save();
             }
-        }
+        },
+        addProduct: {
+            type: ProductType,
+            args: {
+                nombre: {type: new GraphQLNonNull(GraphQLString)},    // GraphQLNonNull prevent to save as null value.
+                precio: {type: new GraphQLNonNull(GraphQLInt)},
+                categoria: {type: new GraphQLNonNull(GraphQLString)},
+                plan: {type: new GraphQLNonNull(GraphQLString)},
+                modalidad: {type: new GraphQLNonNull(GraphQLString)},
+                canal: {type: new GraphQLNonNull(GraphQLString)},
+            },
+            resolve(parent, args){
+                let product = new Product({
+                    nombre: args.nombre,
+                    precio: args.precio,
+                    categoria: args.categoria,
+                    plan: args.plan,
+                    modalidad: args.modalidad,
+                    canal: args.canal,
+                });
+                return product.save();
+            }
+        },
     }
 })
 
