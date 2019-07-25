@@ -3,6 +3,7 @@ const _ = require("lodash");
 const Book = require("../models/book");
 const Author = require("../models/author");
 const Product = require("../models/product");
+const Category = require("../models/category");
 
 const {
     GraphQLObjectType,
@@ -19,13 +20,20 @@ const ProductType = new GraphQLObjectType({
     fields: ()=> ({
         id: {type: GraphQLID},
         nombre: {type: GraphQLString},
-        precio: {type: GraphQLInt},
-        categoria: {type: GraphQLString},
+        precio: {type: GraphQLString},
+        categoryId: {
+            type: CategoryType,
+            resolve(parent, args){
+                //return _.find(authors, {id: parent.authorId});
+                return Category.findById(parent.categoryId);
+            }
+        },
         plan: {type: GraphQLString},
         modalidad: {type: GraphQLString},
         canal: {type: GraphQLString}
     })
 });
+
 
 const BookType = new GraphQLObjectType({
     name: "Book",
@@ -54,6 +62,21 @@ const AuthorType = new GraphQLObjectType({
             resolve(parent, args){
                // return _.filter(books, {authorId: parent.id});
                return Book.find({authorId: parent.id});
+            }
+        }
+    })
+});
+
+const CategoryType = new GraphQLObjectType({
+    name: "Category",
+    fields: ()=> ({
+        id: {type: GraphQLID},
+        name: {type: GraphQLString},
+        products: {
+            type: new GraphQLList(ProductType),
+            resolve(parent, args){
+               // return _.filter(books, {authorId: parent.id});
+               return Product.find({categoryId: parent.id});
             }
         }
     })
@@ -114,6 +137,24 @@ const RootQuery = new GraphQLObjectType({
               return Product.find({});
             }
         },
+        category: {
+            type: CategoryType,
+            args: {id: {type: GraphQLID}},
+
+            resolve(partent, args){
+                // code to get data from db / other source
+
+               // return _.find(books, {id: args.id});
+               return Category.findById(args.id);
+            }
+        },
+        categories: {
+            type: new GraphQLList(CategoryType),
+            resolve(parent, args){
+              //  return products;
+              return Category.find({});
+            }
+        }, 
     }
 });
 
@@ -132,6 +173,18 @@ const Mutation = new GraphQLObjectType({
                     age: args.age
                 });
                 return author.save();
+            }
+        },
+        addCategory:{
+            type: CategoryType,
+            args: {
+                name: {type: new GraphQLNonNull(GraphQLString)},       // GraphQLNonNull prevent to save as null value.
+            },
+            resolve(parent, args){
+                let category = new Category({
+                    name: args.name,
+                });
+                return category.save();
             }
         },
 
@@ -157,8 +210,8 @@ const Mutation = new GraphQLObjectType({
             type: ProductType,
             args: {
                 nombre: {type: new GraphQLNonNull(GraphQLString)},    // GraphQLNonNull prevent to save as null value.
-                precio: {type: new GraphQLNonNull(GraphQLInt)},
-                categoria: {type: new GraphQLNonNull(GraphQLString)},
+                precio: {type: new GraphQLNonNull(GraphQLString)},
+                categoryId: {type: new GraphQLNonNull(GraphQLID)},
                 plan: {type: new GraphQLNonNull(GraphQLString)},
                 modalidad: {type: new GraphQLNonNull(GraphQLString)},
                 canal: {type: new GraphQLNonNull(GraphQLString)},
@@ -167,7 +220,7 @@ const Mutation = new GraphQLObjectType({
                 let product = new Product({
                     nombre: args.nombre,
                     precio: args.precio,
-                    categoria: args.categoria,
+                    categoryId: args.categoryId,
                     plan: args.plan,
                     modalidad: args.modalidad,
                     canal: args.canal,
