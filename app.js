@@ -15,7 +15,7 @@ mongoose.connect(URI, OPTS, function(err) {
   if (err) { return console.error('Conection to DB failed');}
 }); 
 mongoose.connection.once('open', () => {
-console.log('conected to database ON');
+console.log('conected to database OK');
 });
 
 // mongoose.connect('', { useNewUrlParser: true });
@@ -27,6 +27,6 @@ app.use('/graphql',graphqlHTTP({
     schema,
     graphiql: true
 }));
-app.listen(8080, ()=> {
-  console.log("Listening request on port 8080");
+app.listen(4000, ()=> {
+  console.log("Listening request on port 4000");
 });

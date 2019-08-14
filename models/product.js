@@ -5,7 +5,7 @@ const productSchema = new Schema({
     nombre: String,
     precio: String,
     categoryId: String, 
-    plan: String,
+    planId: String,
     modalidad: String,
     canal: String,
     
