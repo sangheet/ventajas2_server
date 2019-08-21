@@ -2,7 +2,7 @@ const graphql = require("graphql");
 const _ = require("lodash");
 const Product = require("../models/product");
 const Category = require("../models/category");
-const Plan = require("../models/plans")
+const Plan = require("../models/plans");
 
 const {
     GraphQLObjectType,
@@ -34,7 +34,7 @@ const ProductType = new GraphQLObjectType({
             }
         },
         modalidad: {type: GraphQLString},
-        canal: {type: GraphQLString}
+        canal: {type: GraphQLString},
     })
 });
 
@@ -173,8 +173,22 @@ const Mutation = new GraphQLObjectType({
                     planId: args.planId,
                     modalidad: args.modalidad,
                     canal: args.canal,
+                    canal: args.creationDate,
                 });
                 return product.save();
+            }
+        },
+        removeProduct: {
+            type: ProductType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLID)},    // GraphQLNonNull prevent to save as null value.
+            },
+            resolve(parent, args){
+                const removedProduct = Product.findByIdAndRemove(args.id).exec();
+                if (!removedProduct) {
+                    throw new Error("Error")
+                }
+                return removedProduct;
             }
         },
     }
